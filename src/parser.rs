@@ -81,6 +81,7 @@ pub struct Request<'a> {
 #[derive(PartialEq,Debug,Clone)]
 pub struct ParsedRequest {
     pub method:Method,
+    pub original_uri:String,
     pub uri:PathBuf,
     pub version:Version
 }
@@ -151,10 +152,9 @@ pub fn parse_request(buf: &[u8]) -> Result<ParsedRequest, ParseError> {
                         
             relative_path.push(request_path.strip_prefix("/")?);
 
-            println!("{}",relative_path.display());
-
             Ok(ParsedRequest {
                 method:method,
+                original_uri:path.to_string(),
                 uri:relative_path,
                 version:r.version,
             })
