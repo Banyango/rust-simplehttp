@@ -1,0 +1,8 @@
+[package]
+name = "rust-turtle-cmd-line"
+version = "0.1.0"
+authors = ["Kyle Reczek <kyle@banyango.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "2.32.0"
