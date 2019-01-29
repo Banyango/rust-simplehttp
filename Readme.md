@@ -9,6 +9,7 @@ to build run ```cargo run```
 ```
 usage:
     -p [PORT] : defaults to listening on port 3000 but you can specify another port to listen on.
+    -v [VERBOSE] : print extra debug info about request/responses and such.
 
 
 Server will listen on localhost:3000
