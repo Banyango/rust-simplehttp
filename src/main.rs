@@ -108,7 +108,7 @@ fn read_request(mut stream: TcpStream) {
                         Ok(mut file) => { send_response(stream, &mut file); },
                         Err(e) => { 
                             println!("{}{}","Error:".red(),e);
-                            send_error_response(stream, "404 Not Found", Some("<html><body>404 page not found</body></html>"));},
+                            send_error_response(stream, "404 Not Found", None);},
                     };     
                                    
                 },
