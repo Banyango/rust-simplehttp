@@ -23,6 +23,7 @@ fn main() {
         .about("Sets up a simple http server for serving static content from a directory")
         .arg(Arg::with_name("port")
             .short("p")
+            .takes_value(true)
             .long("port")
             .required(false)
             .help("Set the port to serve on")).get_matches();    
@@ -31,7 +32,8 @@ fn main() {
     
     println!("Started server at localhost:{}", port);
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{}",port)).unwrap();
+    let listener = TcpListener::bind(format!("127.0.0.1:{}",port))
+        .expect("Unable to start server on requested port");
 
     let pool = ThreadPool::new(4).unwrap();
     
