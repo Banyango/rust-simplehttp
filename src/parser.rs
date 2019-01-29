@@ -4,7 +4,7 @@ use std::string::FromUtf8Error;
 use std::fmt;
 use std::path::PathBuf;
 
-
+use colored::*;
 
 #[derive(Debug)]
 pub struct ParseError {
@@ -78,12 +78,34 @@ pub struct Request<'a> {
     version:Version,
 }
 
+
+
 #[derive(PartialEq,Debug,Clone)]
 pub struct ParsedRequest {
     pub method:Method,
     pub original_uri:String,
+    pub file_type:String,
     pub uri:PathBuf,
     pub version:Version
+}
+
+impl ParsedRequest {
+    pub fn get_mime_type(&self) -> &str {
+        match &self.file_type {
+            s if s == "html" => "text/html",
+            s if s == "jpeg" => "image/jpeg",
+            s if s == "jpg" => "image/jpeg",
+            s if s == "png" => "image/png",
+            s if s == "js" => "text/javascript",
+            s if s == "css" => "text/css",
+            s if s == "gif" => "image/gif",
+            s if s == "svg" => "image/svg+xml",
+            s => {
+                println!("{}{}:{}{}","Error:".red(),"mime-type not supported for file type", s, "feel free to add it");
+                "text/html"
+            }
+       } 
+    }
 }
 
 #[derive(PartialEq,Debug,Clone,Copy)]
@@ -142,10 +164,12 @@ pub fn parse_request(buf: &[u8]) -> Result<ParsedRequest, ParseError> {
             let method = Method::new(r.method)?;
             let path = &String::from_utf8(r.uri.to_vec())?;
             let mut request_path = std::path::Path::new(path).to_path_buf();
+            let extension = std::path::Path::new(path).extension();
+            let mut file_type = "html";
             
-            match request_path.extension() {
-                None => { request_path.push("index.html"); }
-                _ => {}
+            match extension {
+                None => { request_path.push("index.html"); },
+                Some(ext) => { file_type = ext.to_str().unwrap(); }
             };
 
             let mut relative_path = std::env::current_dir().unwrap();
@@ -155,6 +179,7 @@ pub fn parse_request(buf: &[u8]) -> Result<ParsedRequest, ParseError> {
             Ok(ParsedRequest {
                 method:method,
                 original_uri:path.to_string(),
+                file_type:file_type.to_string(),
                 uri:relative_path,
                 version:r.version,
             })

@@ -105,7 +105,7 @@ fn read_request(mut stream: TcpStream) {
                     println!("GET request {}", result.original_uri);
                     
                     match File::open(&path) {
-                        Ok(mut file) => { send_response(stream, &mut file); },
+                        Ok(mut file) => { send_response(stream, &mut file, &result); },
                         Err(e) => { 
                             println!("{}{}","Error:".red(),e);
                             send_error_response(stream, "404 Not Found", None);},
@@ -131,7 +131,7 @@ fn send_error_response(mut stream: TcpStream, code:&str, body:Option<&str>) {
     stream.write_all(response.as_bytes()).unwrap();
 }
 
-fn send_response(mut stream: TcpStream, file: &mut File) {
+fn send_response(mut stream: TcpStream, file: &mut File, parsed_request:&ParsedRequest) {
 
     let mut file_contents = Vec::new();
         
@@ -141,7 +141,10 @@ fn send_response(mut stream: TcpStream, file: &mut File) {
         println!("{} {:#?}","Sending Response".green(), String::from_utf8(file_contents.clone()).unwrap());
     }
 
-    let response = ["HTTP/1.1 200 Ok\n\n".as_bytes(), &file_contents].concat();   
+    let response = [
+        "HTTP/1.1 200 Ok\n".as_bytes(),
+        "Content-Type: ".as_bytes(),parsed_request.get_mime_type().as_bytes(),";\n\n".as_bytes(),         
+        &file_contents].concat();   
 
     stream.write_all(&response).unwrap();
 
