@@ -1,14 +1,19 @@
 extern crate clap;
+#[macro_use]
+extern crate nom;
 
 mod threads;
+mod parser;
 
 use clap::{Arg, App};
 
-use std::io::{Read, Write, BufReader, BufRead};
+use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::sync::mpsc;
+use std::fs::File;
+
 
 use crate::threads::ThreadPool;
+use crate::parser::*;
 
 fn main() {
 
@@ -45,11 +50,49 @@ fn read_request(mut stream: TcpStream) {
 
     println!("Request received {}", String::from_utf8(buffer.to_vec()).unwrap());
 
-    send_response(stream);
+    match parse_request(&buffer) {
+        Ok(result) => {
+            match result.method {
+                Method::Get => {                                                            
+                    let path = &result.uri.as_path();
+
+                    println!("GET request on path {}", path.display());
+
+                    match File::open(&path) {
+                        Ok(mut file) => { send_response(stream, &mut file); },
+                        Err(e) => { 
+                            println!("{}",e);
+                            send_error_response(stream, "404 Not Found", Some("<html><body>404 page not found</body></html>"));},
+                    };                    
+                },
+                // impl HEAD
+                _ => send_error_response(stream, "405 Method Not Allowed", None)
+            }
+        },
+        Err(_e) => {
+            send_error_response(stream, "500 Internal Server Error", None)
+        }
+    };
+
 }
 
-fn send_response(mut stream: TcpStream) {
-    let response = "HTTP/1.1 200 Ok\n\n<html><body>Hello, World!</body></html>";
+fn send_error_response(mut stream: TcpStream, code:&str, body:Option<&str>) {    
+    println!("Server error {}", code);
+
+    let response = "HTTP/1.1 ".to_owned() + code + "\n\n" + body.unwrap_or("");
 
     stream.write_all(response.as_bytes()).unwrap();
+}
+
+fn send_response(mut stream: TcpStream, file: &mut File) {
+
+    let mut file_contents = Vec::new();
+        
+    file.read_to_end(&mut file_contents).unwrap();
+    println!("Sending Response {:#?}", String::from_utf8(file_contents.clone()).unwrap());
+
+    let response = ["HTTP/1.1 200 Ok\n\n".as_bytes(), &file_contents].concat();   
+
+    stream.write_all(&response).unwrap();
+
 }
