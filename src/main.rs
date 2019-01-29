@@ -1,10 +1,14 @@
 extern crate clap;
 
+mod threads;
+
 use clap::{Arg, App};
 
 use std::io::{Read, Write, BufReader, BufRead};
-use std::env;
 use std::net::{TcpListener, TcpStream};
+use std::sync::mpsc;
+
+use crate::threads::ThreadPool;
 
 fn main() {
 
@@ -18,23 +22,30 @@ fn main() {
             .required(false)
             .help("Set the port to serve on")).get_matches();    
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{}",matches.value_of("port").unwrap_or("3000"))).unwrap();
+    let port = matches.value_of("port").unwrap_or("3000");
+    
+    println!("Started server at localhost:{}", port);
 
-    let stream = listener.accept().unwrap().0;
+    let listener = TcpListener::bind(format!("127.0.0.1:{}",port)).unwrap();
 
-    read_request(stream);
+    let pool = ThreadPool::new(4).unwrap();
+    
+    for stream in listener.incoming() {
+        let stream = stream.unwrap();
+
+        pool.execute(|| {
+            read_request(stream);
+        });
+    }
 }
 
-fn read_request(stream: TcpStream) {
-    let mut reader = BufReader::new(stream);
+fn read_request(mut stream: TcpStream) {
+    let mut buffer = [0; 512];
+    stream.read(&mut buffer).unwrap();
 
-    for line in reader.by_ref().lines() {
-        if line.unwrap() == "" {
-            break;
-        }    
-    }
+    println!("Request received {}", String::from_utf8(buffer.to_vec()).unwrap());
 
-    send_response(reader.into_inner());
+    send_response(stream);
 }
 
 fn send_response(mut stream: TcpStream) {
