@@ -20,7 +20,7 @@ enum Message {
     Terminate,
 }
 
-pub struct ThreadPool {
+pub struct ThreadPool {    
     workers: Vec<Worker>,
     sender: mpsc::Sender<Message>,
 }

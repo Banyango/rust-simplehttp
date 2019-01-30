@@ -93,6 +93,7 @@ impl ParsedRequest {
     pub fn get_mime_type(&self) -> &str {
         match &self.file_type {
             s if s == "html" => "text/html",
+            s if s == "htm" => "text/html",
             s if s == "jpeg" => "image/jpeg",
             s if s == "jpg" => "image/jpeg",
             s if s == "png" => "image/png",

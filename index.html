@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Rust Simple webserver | rust-simplehttp</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Rust Simple webserver" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A simple Http server for serving local static files" />
+<meta property="og:description" content="A simple Http server for serving local static files" />
+<link rel="canonical" href="http://www.banyango.com/rust-simplehttp/" />
+<meta property="og:url" content="http://www.banyango.com/rust-simplehttp/" />
+<meta property="og:site_name" content="rust-simplehttp" />
+<script type="application/ld+json">
+{"@type":"WebSite","headline":"Rust Simple webserver","url":"http://www.banyango.com/rust-simplehttp/","name":"rust-simplehttp","description":"A simple Http server for serving local static files","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <link rel="stylesheet" href="/assets/css/style.css">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Rust-SimpleHTTP</h1>
+      <h2 class="project-tagline">A simple Http server for serving local static files</h2>
+      
+        <a href="https://github.com/Banyango/rust-simplehttp" class="btn">View source on GitHub</a>
+        <a href="https://github.com/Banyango/rust-simplehttp/releases" class="btn">Download Latest Release</a>
+            
+    </section>
+
+    <section class="main-content">
+      <h1 id="rust-simple-webserver">Rust Simple webserver</h1>
+
+<p>I was inspired by SimpleHTTP server in python to write up a simple static file server for hosting your files.</p>
+
+<p>Rust-SimpleHTTP is currently WIP so there’s lots missing in terms of response headers and such, and is mostly a learning exercise for myself. But for most usages I think there is enough here. If you run into something that isn't implemented yet, raise an issue on GitHub</p>
+
+<h4>Hot Reload</h4>
+<p>You can additional supply the <code class="highlighter-rouge">-h</code> flag. This will enable hot reloading.
+This will reload your webpage when changes are detected to files on your server. </p>
+
+<p>to build run <code class="highlighter-rouge">cargo run</code></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>usage:
+    -p [PORT] : Defaults to listening on port 3000 but you can specify another 
+                port to listen on.
+    -v        : Verbose mode flag, prints extra debug info about request/responses and such.
+    -h        : Hot reload mode. Will reload your browser page based on file changes 
+                in the server dir. Uses a websocket on port 30012
+
+Server will listen on localhost:3000 by default.
+
+
+</code></pre></div></div>
+
+
+      <footer class="site-footer">
+        
+          <span class="site-footer-owner"><a href="https://github.com/Banyango/rust-simplehttp">rust-simplehttp</a> is maintained by <a href="https://github.com/Banyango">Banyango</a>.</span>
+        
+      </footer>
+    </section>
+
+    
+  </body>
+</html>

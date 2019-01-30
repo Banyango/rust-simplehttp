@@ -4,9 +4,13 @@ extern crate nom;
 extern crate colored; 
 #[macro_use]
 extern crate lazy_static;
+extern crate websocket;
+extern crate notify;
+extern crate bus;
     
 mod threads;
 mod parser;
+mod watcher;
 
 use colored::*;
 use clap::{Arg, App};
@@ -15,18 +19,21 @@ use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::fs::File;
 
+
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref ServerConfig: Mutex<Config> = Mutex::new(Config{port:"".to_string(), verbose:false});
+    static ref ServerConfig: Mutex<Config> = Mutex::new(Config{port:"".to_string(), verbose:false, hotreload:false});
 }
 
 use crate::threads::ThreadPool;
+use crate::watcher::FileWatcher;
 use crate::parser::*;
 
 pub struct Config{
     port:String,
     verbose:bool,
+    hotreload:bool,
 }
 
 fn main() {
@@ -46,20 +53,31 @@ fn main() {
             .long("verbose")
             .required(false)
             .help("Set the logging to verbose"))
+        .arg(Arg::with_name("reload")
+            .short("r")
+            .long("reload")
+            .required(false)
+            .help("Turn on hot reloading. Will poll for file changes and then refresh the page"))
             .get_matches();    
 
     let port = matches.value_of("port").unwrap_or("3000");
 
     let verbose = matches.is_present("verbose");
+    let hotreload = matches.is_present("reload");
 
     ServerConfig.lock().unwrap().port = port.to_string();
     ServerConfig.lock().unwrap().verbose = verbose;
-
+    ServerConfig.lock().unwrap().hotreload = hotreload;
     
     println!("{}","#####################################".blue());
     println!("{}","         rust-simplehttp             ".blue());
     println!("{}","#####################################".blue());
-    println!("{} at {}{} verbose {}","Starting server".green(),"localhost:".bold(), port, verbose);
+    println!("{} at {}{} verbose {} hotreload {}","Starting server".green(),"localhost:".bold(), port, verbose, hotreload);
+
+    let mut hot_reload = None;
+    if ServerConfig.lock().unwrap().hotreload {
+        hot_reload = Some(FileWatcher::new());
+    }
     
     if !port_is_available(&ServerConfig.lock().unwrap().port) {
         println!("{} Could not open listener on port = {}","Error: port is in use".red(), &ServerConfig.lock().unwrap().port);        
@@ -139,12 +157,19 @@ fn send_response(mut stream: TcpStream, file: &mut File, parsed_request:&ParsedR
     
     if ServerConfig.lock().unwrap().verbose { 
         println!("{} {:#?}","Sending Response".green(), String::from_utf8(file_contents.clone()).unwrap());
-    }
+    } 
 
+    let mut additional_content = "";
+    if ServerConfig.lock().unwrap().hotreload && parsed_request.get_mime_type() == "text/html" {
+       additional_content = "<script> var socket = new WebSocket(\"ws://127.0.0.1:30012\",\"rust-simplehttp\");socket.onmessage = function (event) {console.log(\"got event\" + event); location.reload();};</script>"; 
+    }  
+
+    // todo impl this as a builder pattern.
     let response = [
         "HTTP/1.1 200 Ok\n".as_bytes(),
         "Content-Type: ".as_bytes(),parsed_request.get_mime_type().as_bytes(),";\n\n".as_bytes(),         
-        &file_contents].concat();   
+        &file_contents,
+        additional_content.as_bytes()].concat();   
 
     stream.write_all(&response).unwrap();
 
