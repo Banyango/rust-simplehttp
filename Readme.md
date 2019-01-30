@@ -1,6 +1,6 @@
 # Rust Simple webserver
 
-Rust-SimpleHTTP | [Website](http://www.banyango.com/rust-simplehttp/) | 
+Rust-SimpleHTTP | [Website](http://www.banyango.com/rust-simplehttp/) | [![Build Status](https://travis-ci.org/Banyango/rust-simplehttp.svg?branch=master)](https://travis-ci.org/Banyango/rust-simplehttp)
 
 I was inspired by SimpleHTTP server in python to write up a simple static file server in Rust.
 
