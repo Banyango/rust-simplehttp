@@ -10,10 +10,12 @@ to build run ```cargo run```
 
 ```
 usage:
-    -p [PORT] : defaults to listening on port 3000 but you can specify another port to listen on.
-    -v : verbose mode flag print extra debug info about request/responses and such.
+    -p [PORT] : Defaults to listening on port 3000 but you can specify another 
+                port to listen on.
+    -v        : Verbose mode flag, prints extra debug info about request/responses and such.
+    -h        : Hot reload mode. Will reload your browser page based on file changes 
+                in the server dir. Uses a websocket on port 30012
 
-
-Server will listen on localhost:3000
+Server will listen on localhost:3000 by default.
 
 ```
